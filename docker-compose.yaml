@@ -1,0 +1,58 @@
+services:
+  backend:
+    build:
+      context: .
+      target: backend
+    restart: on-failure
+    depends_on:
+      - mongodb
+    environment:
+      - FRONTEND_URL=http://localhost:3000
+      - DOMAIN=localhost
+      - JWT_KEY=10a421df534cd89ed4bd6d7f440ed383c95ec7da00ed47f004b4ed4b0164893cd37326281d0926101696d2a2d1d20a0ae3d297c00c489b1cb6acb3b2ee7689d107ef76de126e44178e861a6cc02d4102b42ec873467f3317b179e577c637b1db32a05fa6a7a4eac5b03e9e18785088952e48a1ede0ebc0f43170251bda9b820f5a649fe553ce519545ba8b6580d02ac6555b81ffccccf82cc4b4d12a558b67fb69a00b07cb9d40e33b6a406e1bd39d099afa8b2661e93e3529a7a2f6570b38852f81c8840fee739b68522f61742d6b6fb31f80045bf3f7346ee5108e6318c16f96682ec489c30eb5456af253aeb2912fde84dde22850049ef4775fc4370aab57
+      - PORT=8080
+      - MONGO_URI=mongodb://user:password@mongodb:27017/database?authSource=admin&retryWrites=true&w=majority&directConnection=true
+      - MAIL_HOST=smtp.mail.ru
+      - MAIL_PORT=465
+      - MAIL_USER=maksim-kim06@mail.ru
+      - MAIL_SENDER=Maksim <maksim-kim06@mail.ru>
+      - MAIL_PASSWORD=uFLXTZf81TEdr9uhbfWt
+    ports:
+      - '8080:8080'
+    networks:
+      - node-network
+
+  frontend:
+    build:
+      context: .
+      target: frontend
+    restart: on-failure
+    environment:
+      - NEXT_PUBLIC_API=http://localhost:8080
+      - NEXT_PRIVATE_API=http://backend:8080
+    ports:
+      - '3000:3000'
+    networks:
+      - node-network
+
+  mongodb:
+    image: mongo:6-jammy
+    ports:
+      - '27017:27017'
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=root-db
+    volumes:
+      - ./docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - dbdata6:/data/db
+    networks:
+      - node-network
+
+volumes:
+  dbdata6:
+
+networks:
+  node-network:
+    driver: bridge
